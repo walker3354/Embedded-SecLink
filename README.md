@@ -2,11 +2,11 @@
 
 **High-Performance Security Middleware for Resource-Constrained Embedded Systems**
 
-## 🎯 Project Overview (專案概述)
+## Project Overview (專案概述)
 
 ESL 是一個專為嵌入式環境 (如 OBU 車載單元、衛星終端) 設計的輕量級 C++ 安全中介軟體。它旨在填補底層密碼學原語 (OpenSSL/mcl) 與上層應用協定 (V2X/Satellite) 之間的鴻溝，提供安全、高效且易於整合的通訊安全層。
 
-## ✨ Core Features (核心功能 - 規劃中)
+##  Core Features (核心功能 - 規劃中)
 
 ### 1. V2X/Satellite Protocol Support (協定支援)
 
@@ -23,7 +23,7 @@ ESL 是一個專為嵌入式環境 (如 OBU 車載單元、衛星終端) 設計�
 - **Modern CMake Build System**: 支援 Config-mode `find_package`，一行指令即可整合至現有專案。
 - **Cross-Platform Ready**: 架構設計考量 x86 (模擬) 與 ARM (實機) 的跨平台編譯需求。
 
-## 🛠️ Tech Stack (技術堆疊)
+##  Tech Stack (技術堆疊)
 
 - **Language**: C++17 (Modern C++ Features)
 - **Build System**: CMake 3.15+
