@@ -33,21 +33,21 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include(FetchContent)
-
-message(STATUS "Fetching Mbed TLS...")
+message(STATUS "Fetching mcl (High-performance BLS)...")
 FetchContent_Declare(
-    mbedtls
-    URL https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v3.6.0.zip
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    mcl
+    GIT_REPOSITORY https://github.com/herumi/mcl.git
+    GIT_TAG        v1.93 
 )
 
-set(ENABLE_PROGRAMS OFF CACHE BOOL "" FORCE)
-set(ENABLE_TESTING OFF CACHE BOOL "" FORCE)
-set(MBEDTLS_AS_SUBPROJECT ON CACHE BOOL "" FORCE)
+set(MCL_STATIC_LIB ON CACHE BOOL "" FORCE)
+set(MCL_USE_LLVM OFF CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(mbedtls)
+FetchContent_MakeAvailable(mcl)
 
-
+if(NOT TARGET mcl::mcl)
+    add_library(mcl::mcl ALIAS mcl)
+endif()
 
 add_subdirectory(src)
 

@@ -4,7 +4,9 @@ else()
     add_library(esl STATIC)
 endif()
 
-target_sources(esl PRIVATE esl_core.cpp)
+target_sources(esl PRIVATE 
+    esl_core.cpp
+    crypto/BlsCore.cpp)
 
 target_include_directories(esl PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
@@ -13,7 +15,7 @@ target_include_directories(esl PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(esl PRIVATE OpenSSL::Crypto)
+target_link_libraries(esl PRIVATE mcl::mcl )
 
 if(ESL_STRICT_MODE)
     if(MSVC)
