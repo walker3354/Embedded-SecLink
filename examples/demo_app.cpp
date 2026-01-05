@@ -6,7 +6,7 @@
 int main() {
     try {
         std::cout << "Initializing BLS Core..." << std::endl;
-        esl::crypto::BlsCore bls(true); // 使用 dev_mode
+        esl::crypto::BlsCore bls(true);
 
         std::cout << "Secret Key: " << bls.get_secret_keyHex() << std::endl;
         std::cout << "Public Key: " << bls.get_public_keyHex() << std::endl;
