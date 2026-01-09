@@ -23,6 +23,7 @@ namespace esl::crypto {
     void BlsCore::globalInit() {
         try {
             initPairing(mcl::BLS12_381);
+
         } catch (const exception& e) {
             throw runtime_error(std::string("mcl init failed: ") + e.what());
         } catch (...) {
@@ -38,12 +39,14 @@ namespace esl::crypto {
     }
 
     string BlsCore::get_public_keyHex() const {
-        return this->keys->publicKey.getStr(10);
+        string pk_str;
+        keys->publicKey.getStr(pk_str, 16 | mcl::IoPrefix);
+        return pk_str;
     }
 
     string BlsCore::get_secret_keyHex() const {
         if (this->dev_mode == true) {
-            return this->keys->secretKey.getStr(10);
+            return this->keys->secretKey.getStr(16 | mcl::IoPrefix);
         }
         cout << "this operation not allow (dev mode lock!)" << endl;
         return "";
@@ -51,27 +54,35 @@ namespace esl::crypto {
 
     string BlsCore::bls_sign(const std::string& message) const {
         G2 hash_point;
-        hashAndMapToG2(hash_point, message);
+        hashAndMapToG2(hash_point, message.c_str(), message.size());
+
         G2 signature;
         G2::mul(signature, hash_point, this->keys->secretKey);
-        return signature.getStr(10);
+
+        string str;
+        signature.getStr(str, 16 | mcl::IoPrefix);
+        return str;
     }
 
     bool BlsCore::bls_verify(const std::string& message,
                              const std::string& signatureHex,
                              const std::string& publicKeyHex) {
         try {
-            G2 pk;
-            G1 sig;
-            G1 H;
-            G2 Q;
+            G1 pk;
+            G2 sig;
+            G2 H;
+            G1 Q;
             GT e1, e2;
-            pk.setStr(publicKeyHex, 16);
-            sig.setStr(signatureHex, 16);
-            hashAndMapToG1(H, message.c_str(), message.size());
-            mapToG2(Q, 1);
-            pairing(e1, H, pk);
-            pairing(e2, sig, Q);
+
+            pk.setStr(publicKeyHex, 16 | mcl::IoPrefix);
+            sig.setStr(signatureHex, 16 | mcl::IoPrefix);
+
+            hashAndMapToG2(H, message.c_str(), message.size());
+            mapToG1(Q, 1);
+
+            pairing(e1, Q, sig);
+            pairing(e2, pk, H);
+
             return e1 == e2;
         } catch (...) {
             return false;
@@ -91,28 +102,28 @@ namespace esl::crypto {
         const std::vector<std::string>& pubKeysHex) {
         if (pubKeysHex.empty() == true) return "";
 
-        G2 agg_pk;
+        G1 agg_pk;
         agg_pk.clear();
         for (const auto& hex : pubKeysHex) {
-            G2 pk;
-            pk.setStr(hex, 16);
-            G2::add(agg_pk, agg_pk, pk);
+            G1 pk;
+            pk.setStr(hex, 16 | mcl::IoPrefix);
+            G1::add(agg_pk, agg_pk, pk);
         }
-        return agg_pk.getStr(16);
+        return agg_pk.getStr(16 | mcl::IoPrefix);
     }
 
     string BlsCore::aggregate_signatures(
         const std::vector<std::string>& signatures) {
         if (signatures.empty()) return "";
 
-        G1 aggSig;
+        G2 aggSig;
         aggSig.clear();
         for (const auto& hex : signatures) {
-            G1 sig;
-            sig.setStr(hex, 16);
-            G1::add(aggSig, aggSig, sig);
+            G2 sig;
+            sig.setStr(hex, 16 | mcl::IoPrefix);
+            G2::add(aggSig, aggSig, sig);
         }
-        return aggSig.getStr(16);
+        return aggSig.getStr(16 | mcl::IoPrefix);
     }
 
     bool BlsCore::verify_fast_aggregate_verify(
@@ -136,7 +147,29 @@ namespace esl::crypto {
         if (messages.size() != publicKeysHex.size()) return false;
 
         try {
-            
+            G2 aggSig;
+            aggSig.setStr(aggSignatureHex, 16 | mcl::IoPrefix);
+
+            G1 Q;
+            mapToG1(Q, 1);
+
+            GT lhs;
+            pairing(lhs, Q, aggSig);
+
+            GT rhs;
+            rhs.setOne();
+
+            for (size_t i = 0; i < messages.size(); i++) {
+                G1 pk;
+                pk.setStr(publicKeysHex[i], 16 | mcl::IoPrefix);
+                G2 H;
+                hashAndMapToG2(H, messages[i].c_str(), messages[i].size());
+                GT e;
+                pairing(e, pk, H);
+                rhs *= e;
+            }
+
+            return lhs == rhs;
         } catch (...) {
             return false;
         }

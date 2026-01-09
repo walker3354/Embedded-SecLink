@@ -8,7 +8,7 @@ namespace esl::crypto {
     class BlsCore {
         private:
             struct Impl;
-            std::unique_ptr<Impl> keys;
+            std::unique_ptr<Impl> keys; // avoid include BLS lib(reduce time)
 
             void generate_keys();
             void BlsCore::globalInit();
