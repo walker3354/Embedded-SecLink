@@ -21,14 +21,18 @@ namespace esl::crypto {
     BlsCore::~BlsCore() = default;
 
     void BlsCore::globalInit() {
-        try {
-            initPairing(mcl::BLS12_381);
+        static once_flag init_flag;
+        call_once(init_flag, []() {
+            try {
+                initPairing(mcl::BLS12_381);
 
-        } catch (const exception& e) {
-            throw runtime_error(std::string("mcl init failed: ") + e.what());
-        } catch (...) {
-            throw runtime_error("mcl init failed with unknown error");
-        }
+            } catch (const exception& e) {
+                throw runtime_error(std::string("mcl init failed: ") +
+                                    e.what());
+            } catch (...) {
+                throw runtime_error("mcl init failed with unknown error");
+            }
+        });
     }
 
     void BlsCore::generate_keys() {

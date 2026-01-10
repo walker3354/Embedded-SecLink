@@ -4,6 +4,7 @@
 #include <string>
 
 #include "esl/crypto/BlsCore.hpp"
+#include "esl/utils/Random.hpp"
 
 using namespace std;
 using namespace esl;
@@ -60,7 +61,8 @@ bool test_bls_aggregate_sign() {
 }
 
 bool test_bls_fast_aggregate_sign() {
-    string message = to_string(get_random_int());
+    // string message = to_string(get_random_int());
+    string message = to_string(utils::Random::getIntGlobal(0, 100));
     vector<string> pk_vector;
     vector<string> sign_vector;
     for (int i = 0; i < 100; i++) {

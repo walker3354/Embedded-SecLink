@@ -5,8 +5,10 @@ else()
 endif()
 
 target_sources(esl PRIVATE 
-    esl_core.cpp
-    crypto/BlsCore.cpp)
+    crypto/BlsCore.cpp
+    
+    utils/Random.cpp
+)
 
 target_include_directories(esl PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
