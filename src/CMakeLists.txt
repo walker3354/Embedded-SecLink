@@ -6,8 +6,9 @@ endif()
 
 target_sources(esl PRIVATE 
     crypto/BlsCore.cpp
-    
     utils/Random.cpp
+    utils/Stopwatch.cpp
+    utils/TimeUtils.cpp
 )
 
 target_include_directories(esl PUBLIC 

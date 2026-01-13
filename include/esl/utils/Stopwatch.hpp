@@ -17,5 +17,18 @@ namespace esl::utils {
 
             double get_once_elapsed_ms();
             double get_once_elapsed_us();
+
+            template <typename Func, typename Args>
+            static double measure_execute_ms(Func&& func, Args&& arg) {
+                Stopwatch sw(true);
+                std::forward<Func>(func)(std::forward<Args>...);
+                return sw.get_once_elapsed_ms();
+            }
+            template <typename Func, typename Args>
+            static double measure_execute_us(Func&& func, Args&& arg) {
+                Stopwatch sw(true);
+                std::forward<Func>(func)(std::forward<Args>...);
+                return sw.get_once_elapsed_us();
+            }
     };
 } // namespace esl::utils

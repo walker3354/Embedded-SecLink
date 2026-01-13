@@ -12,8 +12,8 @@ namespace esl::utils {
 
             void set_random_range(int min, int max);
             int get_random_int();
-            static int getIntGlobal(int min, int max);
 
+            static int getIntGlobal(int min, int max);
             ~Random();
     };
 
