@@ -6,6 +6,7 @@ endif()
 
 target_sources(esl PRIVATE 
     crypto/BlsCore.cpp
+    ${uECC_SOURCE_DIR}/uECC.c 
     utils/Random.cpp
     utils/Stopwatch.cpp
     utils/TimeUtils.cpp
@@ -16,6 +17,7 @@ target_include_directories(esl PUBLIC
     $<INSTALL_INTERFACE:include>
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${uECC_SOURCE_DIR}
 )
 
 target_link_libraries(esl PRIVATE mcl::mcl )

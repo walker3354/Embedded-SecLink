@@ -22,6 +22,9 @@ namespace esl::crypto {
             BlsCore(const BlsCore&) = delete;
             BlsCore& operator=(const BlsCore&) = delete;
 
+            BlsCore(const BlsCore&&) noexcept;
+            BlsCore& operator=(BlsCore&&) noexcept;
+
             std::string get_public_keyHex() const;
             std::string get_secret_keyHex() const;
 

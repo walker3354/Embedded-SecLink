@@ -5,7 +5,7 @@ project(Embedded-SecLink
     LANGUAGES CXX C
 )
 
-option(ESL_BUILD_SHARED "Build ESL as a shared library" OFF)
+option(ESL_BUILD_SHARED "Build ESL as a shared library(.dll)" OFF)
 option(ESL_BUILD_TESTS "Build test suite" ON)
 option(ESL_BUILD_EXAMPLES "Build examples" ON)
 option(ESL_STRICT_MODE "Enable strict compilation warnings" ON)
@@ -33,7 +33,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include(FetchContent)
-message(STATUS "Fetching mcl (High-performance BLS)...")
+message(STATUS "Fetching mcl ...")
 FetchContent_Declare(
     mcl
     GIT_REPOSITORY https://github.com/herumi/mcl.git
@@ -44,6 +44,17 @@ set(MCL_STATIC_LIB ON CACHE BOOL "" FORCE)
 set(MCL_USE_LLVM OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(mcl)
+
+
+message(STATUS "Fetching micro-ecc....")
+FetchContent_Declare(
+    micro_ecc 
+    GIT_REPOSITORY https://github.com/kmackay/micro-ecc.git
+    GIT_TAG        master   
+)
+
+FetchContent_MakeAvailable(micro_ecc)
+FetchContent_GetProperties(micro_ecc SOURCE_DIR uECC_SOURCE_DIR)
 
 if(NOT TARGET mcl::mcl)
     add_library(mcl::mcl ALIAS mcl)
