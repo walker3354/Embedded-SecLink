@@ -25,7 +25,6 @@ namespace esl::crypto {
         call_once(init_flag, []() {
             try {
                 initPairing(mcl::BLS12_381);
-
             } catch (const exception& e) {
                 throw runtime_error(std::string("mcl init failed: ") +
                                     e.what());
