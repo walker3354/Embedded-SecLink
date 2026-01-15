@@ -56,6 +56,24 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(micro_ecc)
 FetchContent_GetProperties(micro_ecc SOURCE_DIR uECC_SOURCE_DIR)
 
+message(STATUS "Fetching PicoSHA2")
+FetchContent_Declare(
+    picosha2
+    GIT_REPOSITORY https://github.com/okdshin/PicoSHA2.git
+    GIT_TAG        master
+)
+FetchContent_MakeAvailable(picosha2)
+FetchContent_GetProperties(picosha2 SOURCE_DIR picosha2_SOURCE_DIR)
+
+message(STATUS "Fetching tiny-AES-c...")
+FetchContent_Declare(
+    tiny_aes
+    GIT_REPOSITORY https://github.com/kokke/tiny-AES-c.git
+    GIT_TAG        master
+)
+FetchContent_MakeAvailable(tiny_aes)
+FetchContent_GetProperties(tiny_aes SOURCE_DIR aes_SOURCE_DIR)
+
 if(NOT TARGET mcl::mcl)
     add_library(mcl::mcl ALIAS mcl)
 endif()
