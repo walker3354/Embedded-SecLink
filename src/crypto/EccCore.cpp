@@ -157,9 +157,9 @@ namespace esl::crypto {
             throw runtime_error("ECC: Session key length must be 32 bytes");
         }
 
-        vector<uint8_t> temp_key(picosha2::k_digest_size);
-        picosha2::hash256(session_key.begin(), session_key.end(),
-                          temp_key.begin(), temp_key.end());
+        vector<uint8_t> temp_key(k_digest_size);
+        hash256(session_key.begin(), session_key.end(), temp_key.begin(),
+                temp_key.end());
         vector<uint8_t> aes_key(temp_key.begin(),
                                 temp_key.begin() + AesCore::KEY_SIZE);
 
@@ -190,9 +190,9 @@ namespace esl::crypto {
         if (encrypted_data.size() < AesCore::IV_SIZE + AesCore::BLOCK_SIZE) {
             throw runtime_error("ECC: Encrypted data too short");
         }
-        vector<uint8_t> temp_key(picosha2::k_digest_size);
-        picosha2::hash256(session_key.begin(), session_key.end(),
-                          temp_key.begin(), temp_key.end());
+        vector<uint8_t> temp_key(k_digest_size);
+        hash256(session_key.begin(), session_key.end(), temp_key.begin(),
+                temp_key.end());
         vector<uint8_t> aes_key(temp_key.begin(),
                                 temp_key.begin() + AesCore::KEY_SIZE);
         vector<uint8_t> iv(encrypted_data.begin(),

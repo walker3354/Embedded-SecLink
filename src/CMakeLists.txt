@@ -16,6 +16,7 @@ target_sources(esl
     utils/Random.cpp
     utils/Stopwatch.cpp
     utils/TimeUtils.cpp
+    utils/HashTree.cpp
 )
 
 target_include_directories(esl 
