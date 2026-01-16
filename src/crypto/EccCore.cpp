@@ -131,17 +131,17 @@ namespace esl::crypto {
                             m_impl->curve);
         } else if (peer_public_key.size() != 64)
             throw invalid_argument("ECDH: Invalid peer public key size");
-        vector<uint8_t> session_key(32);
+        vector<uint8_t> session_key(EccCore::session_key_size);
         int result =
             uECC_shared_secret(raw_peer_key.data(), m_impl->private_key,
                                session_key.data(), m_impl->curve);
         if (result == 0) throw runtime_error("ECDH failed");
-        return session_key;
+        return session_key; // 32 bytes
     }
 
-    vector<uint8_t> symmetric_encrypt(vector<uint8_t>& session_key,
-                                      string& message) {
-        if (session_key.size() != 32) {
+    vector<uint8_t> EccCore::symmetric_encrypt(
+        const vector<uint8_t>& session_key, const string& message) {
+        if (session_key.size() != EccCore::session_key_size) {
             throw runtime_error("ECC: Session key length must be 32 bytes");
         }
 
@@ -172,7 +172,7 @@ namespace esl::crypto {
     string EccCore::symmetric_decrypt(
         const vector<uint8_t>& session_key,
         const vector<uint8_t>& encrypted_data) const {
-        if (session_key.size() != 32) {
+        if (session_key.size() != EccCore::session_key_size) {
             throw runtime_error("ECC: Session key length must be 32 bytes");
         }
         if (encrypted_data.size() < AesCore::IV_SIZE + AesCore::BLOCK_SIZE) {
@@ -212,15 +212,17 @@ namespace esl::crypto {
 
     string EccCore::asymmetric_decrypt(
         const vector<uint8_t>& encrypted_package) const {
-        size_t min_len = 33 + AesCore::IV_SIZE + AesCore::BLOCK_SIZE;
+        size_t min_len = EccCore::compressed_pk_size + AesCore::IV_SIZE +
+                         AesCore::BLOCK_SIZE;
         if (encrypted_package.size() < min_len) {
             throw runtime_error("ECC: Asymmetric encrypted package too short");
         }
-        size_t pub_key_len = 33;
-        vector<uint8_t> eph_pub_key(encrypted_package.begin(),
-                                    encrypted_package.begin() + pub_key_len);
+        vector<uint8_t> eph_pub_key(
+            encrypted_package.begin(),
+            encrypted_package.begin() + EccCore::compressed_pk_size);
         vector<uint8_t> encrypted_payload(
-            encrypted_package.begin() + pub_key_len, encrypted_package.end());
+            encrypted_package.begin() + EccCore::compressed_pk_size,
+            encrypted_package.end());
         vector<uint8_t> session_key = this->ECDH(eph_pub_key);
         return this->symmetric_decrypt(session_key, encrypted_payload);
     }

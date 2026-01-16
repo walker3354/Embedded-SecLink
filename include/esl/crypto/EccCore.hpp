@@ -10,6 +10,9 @@ namespace esl::crypto {
 
             void generate_keys();
 
+            static constexpr size_t compressed_pk_size = 33;
+            static constexpr size_t session_key_size = 32;
+
         public:
             EccCore(bool dev_mode = false);
             ~EccCore();
