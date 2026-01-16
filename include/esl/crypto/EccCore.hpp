@@ -33,6 +33,22 @@ namespace esl::crypto {
                                          const string& message,
                                          const std::vector<uint8_t>& signature);
 
-            std::vector<uint8_t> ECDH(const vector<uint8_t>& peer_public_key)const;
+            std::vector<uint8_t> ECDH(
+                const vector<uint8_t>& peer_public_key) const;
+
+            std::vector<uint8_t> symmetric_encrypt(
+                const std::vector<uint8_t>& session_key,
+                const std::string& message);
+
+            std::string symmetric_decrypt(
+                const vector<uint8_t>& session_key,
+                const vector<uint8_t>& encrypted_data) const;
+
+            std::vector<uint8_t> asymmetric_encrypt(
+                const std::vector<uint8_t>& peer_public_key,
+                const std::string& message) const;
+
+            std::string asymmetric_decrypt(
+                const std::vector<uint8_t>& encrypted_package) const;
     };
 } // namespace esl::crypto

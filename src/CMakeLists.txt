@@ -5,11 +5,14 @@ else()
 endif()
 
 target_sources(esl 
-    PRIVATE 
-    crypto/BlsCore.cpp
-    crypto/EccCore.cpp
+    PRIVATE
     ${aes_SOURCE_DIR}/aes.c
     ${uECC_SOURCE_DIR}/uECC.c 
+
+    crypto/BlsCore.cpp
+    crypto/EccCore.cpp
+    crypto/AesCore.cpp
+
     utils/Random.cpp
     utils/Stopwatch.cpp
     utils/TimeUtils.cpp

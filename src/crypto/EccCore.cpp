@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <sstream>
 
+#include "esl/crypto/AesCore.hpp"
 #include "esl/utils/Random.hpp"
 #include "picosha2.h"
 #include "uECC.h"
@@ -137,4 +138,91 @@ namespace esl::crypto {
         if (result == 0) throw runtime_error("ECDH failed");
         return session_key;
     }
+
+    vector<uint8_t> symmetric_encrypt(vector<uint8_t>& session_key,
+                                      string& message) {
+        if (session_key.size() != 32) {
+            throw runtime_error("ECC: Session key length must be 32 bytes");
+        }
+
+        vector<uint8_t> temp_key(picosha2::k_digest_size);
+        picosha2::hash256(session_key.begin(), session_key.end(),
+                          temp_key.begin(), temp_key.end());
+        vector<uint8_t> aes_key(temp_key.begin(),
+                                temp_key.begin() + AesCore::KEY_SIZE);
+
+        uint8_t temp_rng[AesCore::IV_SIZE];
+
+        if (rng_function(temp_rng, AesCore::IV_SIZE) != 1) {
+            throw runtime_error("ECC: RNG generation failed");
+        }
+        vector<uint8_t> iv(temp_rng, temp_rng + AesCore::IV_SIZE);
+        vector<uint8_t> plaintext(message.begin(), message.end());
+
+        vector<uint8_t> ciphertext =
+            AesCore::encrypt_cbc(plaintext, aes_key, iv);
+        vector<uint8_t> result;
+        result.reserve(iv.size() + ciphertext.size());
+        result.insert(result.end(), iv.begin(), iv.end());
+        result.insert(result.end(), ciphertext.begin(), ciphertext.end());
+
+        return result;
+    }
+
+    string EccCore::symmetric_decrypt(
+        const vector<uint8_t>& session_key,
+        const vector<uint8_t>& encrypted_data) const {
+        if (session_key.size() != 32) {
+            throw runtime_error("ECC: Session key length must be 32 bytes");
+        }
+        if (encrypted_data.size() < AesCore::IV_SIZE + AesCore::BLOCK_SIZE) {
+            throw runtime_error("ECC: Encrypted data too short");
+        }
+        vector<uint8_t> temp_key(picosha2::k_digest_size);
+        picosha2::hash256(session_key.begin(), session_key.end(),
+                          temp_key.begin(), temp_key.end());
+        vector<uint8_t> aes_key(temp_key.begin(),
+                                temp_key.begin() + AesCore::KEY_SIZE);
+        vector<uint8_t> iv(encrypted_data.begin(),
+                           encrypted_data.begin() + AesCore::IV_SIZE);
+        vector<uint8_t> ciphertext(encrypted_data.begin() + AesCore::IV_SIZE,
+                                   encrypted_data.end());
+        vector<uint8_t> plaintext =
+            AesCore::decrypt_cbc(ciphertext, aes_key, iv);
+
+        return string(plaintext.begin(), plaintext.end());
+    }
+
+    vector<uint8_t> EccCore::asymmetric_encrypt(
+        const vector<uint8_t>& peer_public_key, const string& message) const {
+        EccCore ephemeral_key(true);
+        vector<uint8_t> session_key = ephemeral_key.ECDH(peer_public_key);
+        vector<uint8_t> encrypted_payload =
+            ephemeral_key.symmetric_encrypt(session_key, message);
+
+        vector<uint8_t> result;
+        vector<uint8_t> eph_pub_key = ephemeral_key.get_compressed_public_key();
+        result.reserve(eph_pub_key.size() + encrypted_payload.size());
+        result.insert(result.end(), eph_pub_key.begin(), eph_pub_key.end());
+        result.insert(result.end(), encrypted_payload.begin(),
+                      encrypted_payload.end());
+
+        return result;
+    }
+
+    string EccCore::asymmetric_decrypt(
+        const vector<uint8_t>& encrypted_package) const {
+        size_t min_len = 33 + AesCore::IV_SIZE + AesCore::BLOCK_SIZE;
+        if (encrypted_package.size() < min_len) {
+            throw runtime_error("ECC: Asymmetric encrypted package too short");
+        }
+        size_t pub_key_len = 33;
+        vector<uint8_t> eph_pub_key(encrypted_package.begin(),
+                                    encrypted_package.begin() + pub_key_len);
+        vector<uint8_t> encrypted_payload(
+            encrypted_package.begin() + pub_key_len, encrypted_package.end());
+        vector<uint8_t> session_key = this->ECDH(eph_pub_key);
+        return this->symmetric_decrypt(session_key, encrypted_payload);
+    }
+
 } // namespace esl::crypto
