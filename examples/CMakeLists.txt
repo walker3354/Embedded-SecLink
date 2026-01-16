@@ -1,3 +1,3 @@
-add_executable(demo_app demo_app.cpp)
+add_executable(BlsCore_test BlsCore_test.cpp)
 
-target_link_libraries(demo_app PRIVATE esl)
+target_link_libraries(BlsCore_test PRIVATE esl)

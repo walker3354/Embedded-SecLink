@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <sstream>
 
-#include "esl/crypto/AesCore.hpp"
+#include "AesCore.hpp"
 #include "esl/utils/Random.hpp"
 #include "picosha2.h"
 #include "uECC.h"
