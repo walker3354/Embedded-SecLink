@@ -1,6 +1,7 @@
 #include "esl/crypto/EccCore.hpp"
 
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 
 #include "AesCore.hpp"
@@ -44,8 +45,14 @@ namespace esl::crypto {
     };
 
     EccCore::EccCore(bool dev_mode) : m_impl(make_unique<Impl>()) {
+        this->dev_mode = dev_mode;
         this->generate_keys();
     }
+
+    EccCore::~EccCore() = default;
+
+    EccCore::EccCore(EccCore&&) noexcept = default;
+    EccCore& EccCore::operator=(EccCore&&) noexcept = default;
 
     void EccCore::generate_keys() {
         int result = uECC_make_key(m_impl->public_key, m_impl->private_key,
@@ -63,9 +70,13 @@ namespace esl::crypto {
     }
 
     vector<uint8_t> EccCore::get_private_key() const {
-        return vector<uint8_t>(
-            m_impl->private_key,
-            m_impl->private_key + sizeof(m_impl->private_key));
+        if (this->dev_mode == true) {
+            return vector<uint8_t>(
+                m_impl->private_key,
+                m_impl->private_key + sizeof(m_impl->private_key));
+        }
+        cout << "Dev mode off" << endl;
+        return vector<uint8_t>();
     }
 
     vector<uint8_t> EccCore::get_compressed_public_key() const {
@@ -95,9 +106,9 @@ namespace esl::crypto {
         vector<uint8_t> signature(64);
         hash256(message.begin(), message.end(), hashed_message.begin(),
                 hashed_message.end());
-        int result =
-            uECC_sign(m_impl->private_key, hashed_message.data(),
-                      hashed_message.size(), signature.data(), m_impl->curve);
+        int result = uECC_sign(m_impl->private_key, hashed_message.data(),
+                               static_cast<unsigned>(hashed_message.size()),
+                               signature.data(), m_impl->curve);
         if (result == 0) throw runtime_error("ECC: ECDSA signing failed");
         return signature;
     }
@@ -117,7 +128,8 @@ namespace esl::crypto {
         vector<uint8_t> hash(k_digest_size);
         hash256(message.begin(), message.end(), hash.begin(), hash.end());
 
-        int result = uECC_verify(public_key.data(), hash.data(), hash.size(),
+        int result = uECC_verify(public_key.data(), hash.data(),
+                                 static_cast<unsigned>(hash.size()),
                                  signature.data(), curve);
         return (result == 1);
     }

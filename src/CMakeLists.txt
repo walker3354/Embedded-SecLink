@@ -39,3 +39,17 @@ if(ESL_STRICT_MODE)
         target_compile_options(esl PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
 endif()
+
+if(MSVC)
+    set_source_files_properties(
+        ${uECC_SOURCE_DIR}/uECC.c
+        ${aes_SOURCE_DIR}/aes.c
+        PROPERTIES COMPILE_OPTIONS "/W1;/WX-"
+    )
+else()
+    set_source_files_properties(
+        ${uECC_SOURCE_DIR}/uECC.c
+        ${aes_SOURCE_DIR}/aes.c
+        PROPERTIES COMPILE_OPTIONS "-w"
+    )
+endif()

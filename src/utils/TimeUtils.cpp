@@ -6,6 +6,16 @@
 using namespace std;
 using namespace chrono;
 
+namespace {
+    void safe_localtime(const time_t* time, struct tm* result) {
+#if defined(_MSC_VER)
+        localtime_s(result, time);
+#else
+        localtime_r(time, result);
+#endif
+    }
+} // namespace
+
 namespace esl::utils {
     TimeUtils::TimeUtils() = default;
     TimeUtils::~TimeUtils() = default;
@@ -27,7 +37,8 @@ namespace esl::utils {
         seconds sec = duration_cast<seconds>(ms);
         long long remaining_ms = ms.count() % 1000;
         time_t t = sec.count();
-        tm tm_struct = *localtime(&t);
+        tm tm_struct;
+        safe_localtime(&t, &tm_struct);
         stringstream ss;
         ss << put_time(&tm_struct, "%Y-%m-%d %H:%M:%S") << "." << setfill('0')
            << setw(3) << remaining_ms;
@@ -36,7 +47,8 @@ namespace esl::utils {
 
     string TimeUtils::format_Timestamp_s(seconds sec) {
         time_t t = sec.count();
-        tm tm_struct = *localtime(&t); // transfer time(s) to struct
+        tm tm_struct;
+        safe_localtime(&t, &tm_struct);
         stringstream ss;
         ss << put_time(&tm_struct, "%Y-%m-%d %H:%M:%S");
         return ss.str();

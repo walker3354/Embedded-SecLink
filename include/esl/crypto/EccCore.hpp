@@ -8,10 +8,11 @@ namespace esl::crypto {
             struct Impl;
             std::unique_ptr<Impl> m_impl;
 
-            void generate_keys();
-
+            bool dev_mode;
             static constexpr size_t compressed_pk_size = 33;
             static constexpr size_t session_key_size = 32;
+
+            void generate_keys();
 
         public:
             EccCore(bool dev_mode = false);
@@ -33,19 +34,19 @@ namespace esl::crypto {
 
             std::vector<uint8_t> ECDSA(const std::string& message) const;
             static bool verify_signature(const std::vector<uint8_t>& public_key,
-                                         const string& message,
+                                         const std::string& message,
                                          const std::vector<uint8_t>& signature);
 
             std::vector<uint8_t> ECDH(
-                const vector<uint8_t>& peer_public_key) const;
+                const std::vector<uint8_t>& peer_public_key) const;
 
             std::vector<uint8_t> symmetric_encrypt(
                 const std::vector<uint8_t>& session_key,
                 const std::string& message);
 
             std::string symmetric_decrypt(
-                const vector<uint8_t>& session_key,
-                const vector<uint8_t>& encrypted_data) const;
+                const std::vector<uint8_t>& session_key,
+                const std::vector<uint8_t>& encrypted_data) const;
 
             std::vector<uint8_t> asymmetric_encrypt(
                 const std::vector<uint8_t>& peer_public_key,
