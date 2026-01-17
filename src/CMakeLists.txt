@@ -70,6 +70,33 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/esl
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/eslConfigVersion.cmake"
+    VERSION 0.9.5
+    COMPATIBILITY AnyNewerVersion
+)
+
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/eslConfig.cmake"
+    "include(CMakeFindDependencyMacro)\n"
+    "find_dependency(mcl)\n" 
+    "include(\"\${CMAKE_CURRENT_LIST_DIR}/eslTargets.cmake\")\n"
+)
+
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/mclConfig.cmake"
+    "include(\"\${CMAKE_CURRENT_LIST_DIR}/mclTargets.cmake\")\n"
+)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mclConfig.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mcl
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/eslConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/eslConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/esl
+)
+
 install(EXPORT eslTargets
     FILE eslTargets.cmake
     NAMESPACE esl::
