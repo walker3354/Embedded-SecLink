@@ -75,8 +75,14 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(tiny_aes)
 FetchContent_GetProperties(tiny_aes SOURCE_DIR aes_SOURCE_DIR)
 
-if(NOT TARGET mcl::mcl)
-    add_library(mcl::mcl ALIAS mcl)
+if(TARGET mcl_st)
+    if(NOT TARGET mcl::mcl)
+        add_library(mcl::mcl ALIAS mcl_st)
+    endif()
+elseif(TARGET mcl)
+    if(NOT TARGET mcl::mcl)
+        add_library(mcl::mcl ALIAS mcl)
+    endif()
 endif()
 
 add_subdirectory(src)
