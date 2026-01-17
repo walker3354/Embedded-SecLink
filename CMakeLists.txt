@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.15)
 
 project(Embedded-SecLink 
-    VERSION 0.9.5 
+    VERSION 0.9.9
     LANGUAGES CXX C
 )
 
 option(ESL_BUILD_SHARED "Build ESL as a shared library(.dll)" OFF)
-option(ESL_BUILD_TESTS "Build test suite" ON)
-option(ESL_BUILD_EXAMPLES "Build examples" ON)
+option(ESL_BUILD_TESTS "Build test suite" OFF)
+option(ESL_BUILD_EXAMPLES "Build examples" OFF)
 option(ESL_STRICT_MODE "Enable strict compilation warnings" ON)
 
 set(CMAKE_CXX_STANDARD 17)
