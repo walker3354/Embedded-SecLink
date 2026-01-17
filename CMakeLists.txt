@@ -8,7 +8,7 @@ project(Embedded-SecLink
 
 option(ESL_BUILD_SHARED "Build ESL as a shared library(.dll)" OFF)
 option(ESL_BUILD_TESTS "Build test suite" OFF)
-option(ESL_BUILD_EXAMPLES "Build examples" OFF)
+option(ESL_BUILD_EXAMPLES "Build examples" ON)
 option(ESL_STRICT_MODE "Enable strict compilation warnings" ON)
 
 set(CMAKE_CXX_STANDARD 17)
