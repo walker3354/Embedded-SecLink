@@ -45,7 +45,9 @@ set(MCL_STATIC_LIB ON CACHE BOOL "" FORCE)
 set(MCL_USE_LLVM OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(mcl)
-
+if(TARGET mcl)
+    set_target_properties(mcl PROPERTIES EXCLUDE_FROM_ALL TRUE)
+endif()
 
 message(STATUS "Fetching micro-ecc....")
 FetchContent_Declare(
