@@ -21,9 +21,11 @@ target_sources(esl
     utils/HashTree.cpp
 )
 
+get_filename_component(ESL_REAL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../include" ABSOLUTE)
+
 target_include_directories(esl 
     PUBLIC 
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+    $<BUILD_INTERFACE:${ESL_REAL_INCLUDE_DIR}>
     $<INSTALL_INTERFACE:include>
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
