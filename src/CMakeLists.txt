@@ -35,7 +35,7 @@ target_include_directories(esl
 )
 
 target_compile_definitions(esl PRIVATE CBC=1 CTR=0 ECB=0)
-target_link_libraries(esl PRIVATE mcl::mcl )
+target_link_libraries(esl PUBLIC mcl::mcl )
 
 if(ESL_STRICT_MODE)
     if(MSVC)
