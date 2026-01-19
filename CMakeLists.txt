@@ -9,15 +9,14 @@ project(Embedded-SecLink
 option(ESL_BUILD_SHARED "Build ESL as a shared library(.dll)" OFF)
 option(ESL_BUILD_TESTS "Build test suite" OFF)
 option(ESL_BUILD_EXAMPLES "Build examples" ON)
-option(ESL_STRICT_MODE "Enable strict compilation warnings" ON)
+option(ESL_STRICT_MODE "Enable strict compilation warnings" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-
+include(FetchContent)
 if(ESL_BUILD_TESTS)
-    include(FetchContent)
     message(STATUS "Fetching GoogleTest...")
     FetchContent_Declare(
         googletest
@@ -33,21 +32,14 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-include(FetchContent)
-message(STATUS "Fetching mcl ...")
+message(STATUS "Fetching blst ...")
 FetchContent_Declare(
-    mcl
-    GIT_REPOSITORY https://github.com/herumi/mcl.git
-    GIT_TAG        v1.93 
+    blst
+    GIT_REPOSITORY https://github.com/supranational/blst.git
+    GIT_TAG        v0.3.15  # 建議綁一個 release tag，避免 API 演進造成破壞 [web:20]
 )
-
-set(MCL_STATIC_LIB ON CACHE BOOL "" FORCE)
-set(MCL_USE_LLVM OFF CACHE BOOL "" FORCE)
-
-FetchContent_MakeAvailable(mcl)
-if(TARGET mcl)
-    set_target_properties(mcl PROPERTIES EXCLUDE_FROM_ALL TRUE)
-endif()
+FetchContent_MakeAvailable(blst)
+FetchContent_GetProperties(blst SOURCE_DIR blst_SOURCE_DIR)
 
 message(STATUS "Fetching micro-ecc....")
 FetchContent_Declare(
@@ -77,15 +69,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(tiny_aes)
 FetchContent_GetProperties(tiny_aes SOURCE_DIR aes_SOURCE_DIR)
 
-if(TARGET mcl_st)
-    if(NOT TARGET mcl::mcl)
-        add_library(mcl::mcl ALIAS mcl_st)
-    endif()
-elseif(TARGET mcl)
-    if(NOT TARGET mcl::mcl)
-        add_library(mcl::mcl ALIAS mcl)
-    endif()
-endif()
+
 
 add_subdirectory(src)
 

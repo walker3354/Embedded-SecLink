@@ -4,7 +4,25 @@ else()
     add_library(esl STATIC)
 endif()
 
+file(GLOB BLST_SOURCES "${blst_SOURCE_DIR}/src/*.c")
+
+add_library(blst STATIC ${blst_SOURCE_DIR}/src/server.c)
 add_library(esl::esl ALIAS esl)
+
+if(MSVC)
+    target_compile_options(blst PRIVATE
+        /std:c11        
+        /wd4146         
+        /wd4334        
+    )
+else()
+    target_compile_options(blst PRIVATE -std=c11)
+endif()
+
+target_include_directories(blst
+    PUBLIC
+        ${blst_SOURCE_DIR}/bindings
+)
 
 target_sources(esl 
     PRIVATE
@@ -20,7 +38,6 @@ target_sources(esl
     utils/TimeUtils.cpp
     utils/HashTree.cpp
 )
-
 get_filename_component(ESL_REAL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../include" ABSOLUTE)
 
 target_include_directories(esl 
@@ -28,6 +45,7 @@ target_include_directories(esl
     $<BUILD_INTERFACE:${ESL_REAL_INCLUDE_DIR}>
     $<INSTALL_INTERFACE:include>
     PRIVATE
+    ${blst_SOURCE_DIR}/bindings 
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${uECC_SOURCE_DIR}
     ${picosha2_SOURCE_DIR}
@@ -35,7 +53,8 @@ target_include_directories(esl
 )
 
 target_compile_definitions(esl PRIVATE CBC=1 CTR=0 ECB=0)
-target_link_libraries(esl PUBLIC mcl_st )
+target_compile_definitions(blst PUBLIC __BLST_PORTABLE__ )
+target_link_libraries(esl PUBLIC blst)
 
 if(ESL_STRICT_MODE)
     if(MSVC)

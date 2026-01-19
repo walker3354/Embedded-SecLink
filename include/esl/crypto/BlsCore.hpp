@@ -8,27 +8,26 @@ namespace esl::crypto {
     class BlsCore {
         private:
             struct Impl;
-            std::unique_ptr<Impl> keys; // avoid include BLS lib(reduce time)
+            std::unique_ptr<Impl> keys;
 
             void generate_keys();
-            void BlsCore::globalInit();
-
+            void globalInit();
             bool dev_mode;
 
         public:
             BlsCore(bool dev_mode = false);
             ~BlsCore();
 
+            // 暫時先禁用 copy/move（避免實作 move constructor）
             BlsCore(const BlsCore&) = delete;
             BlsCore& operator=(const BlsCore&) = delete;
-
-            BlsCore(const BlsCore&&) noexcept;
-            BlsCore& operator=(BlsCore&&) noexcept;
+            // BlsCore(BlsCore&&) noexcept;               // 先註解掉
+            // BlsCore& operator=(BlsCore&&) noexcept;    // 先註解掉
 
             std::string get_public_keyHex() const;
             std::string get_secret_keyHex() const;
-
             std::string bls_sign(const std::string& message) const;
+
             static bool bls_verify(const std::string& message,
                                    const std::string& signatureHex,
                                    const std::string& publicKeyHex);
@@ -39,21 +38,22 @@ namespace esl::crypto {
 
             static std::string aggregate_public_keys(
                 const std::vector<std::string>& pubKeysHex);
+
             static std::string aggregate_signatures(
                 const std::vector<std::string>& signatures);
 
-            // same message signatures
             static bool verify_fast_aggregate_verify(
                 const std::string& message, const std::string& aggSignatureHex,
                 const std::string& aggPublicKeyHex);
+
             static bool verify_fast_aggregate_verify(
                 const std::string& message, const std::string& aggSignatureHex,
                 const std::vector<std::string>& publicKeysHex);
 
-            // different message signatures
-            static bool BlsCore::verify_aggregate_signature_distinct_messages(
+            static bool verify_aggregate_signature_distinct_messages(
                 const std::vector<std::string>& messages,
                 const std::vector<std::string>& publicKeysHex,
                 const std::string& aggSignatureHex);
     };
-}; // namespace esl::crypto
+
+} // namespace esl::crypto
