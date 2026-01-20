@@ -4,25 +4,7 @@ else()
     add_library(esl STATIC)
 endif()
 
-file(GLOB BLST_SOURCES "${blst_SOURCE_DIR}/src/*.c")
-
-add_library(blst STATIC ${blst_SOURCE_DIR}/src/server.c)
 add_library(esl::esl ALIAS esl)
-
-if(MSVC)
-    target_compile_options(blst PRIVATE
-        /std:c11        
-        /wd4146         
-        /wd4334        
-    )
-else()
-    target_compile_options(blst PRIVATE -std=c11)
-endif()
-
-target_include_directories(blst
-    PUBLIC
-        ${blst_SOURCE_DIR}/bindings
-)
 
 target_sources(esl 
     PRIVATE
@@ -53,8 +35,7 @@ target_include_directories(esl
 )
 
 target_compile_definitions(esl PRIVATE CBC=1 CTR=0 ECB=0)
-target_compile_definitions(blst PUBLIC __BLST_PORTABLE__ )
-target_link_libraries(esl PUBLIC blst)
+target_link_libraries(esl PRIVATE  blst)
 
 if(ESL_STRICT_MODE)
     if(MSVC)

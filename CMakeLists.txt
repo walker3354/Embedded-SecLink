@@ -36,10 +36,53 @@ message(STATUS "Fetching blst ...")
 FetchContent_Declare(
     blst
     GIT_REPOSITORY https://github.com/supranational/blst.git
-    GIT_TAG        v0.3.15  # 建議綁一個 release tag，避免 API 演進造成破壞 [web:20]
+    GIT_TAG        v0.3.13
 )
-FetchContent_MakeAvailable(blst)
-FetchContent_GetProperties(blst SOURCE_DIR blst_SOURCE_DIR)
+
+message(STATUS "Fetching blst ...")
+FetchContent_Declare(
+    blst
+    GIT_REPOSITORY https://github.com/supranational/blst.git
+    GIT_TAG        v0.3.13
+)
+
+FetchContent_GetProperties(blst)
+if(NOT blst_POPULATED)
+    FetchContent_Populate(blst)
+    
+    set(BLST_SOURCES "${blst_SOURCE_DIR}/src/server.c")
+    
+    if(MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+        file(GLOB BLST_ASM_SOURCES 
+            "${blst_SOURCE_DIR}/build/win64/*-x86_64.asm"
+        )
+        
+        if(BLST_ASM_SOURCES)
+            list(APPEND BLST_SOURCES ${BLST_ASM_SOURCES})
+            enable_language(ASM_MASM)
+        endif()
+    endif()
+    
+    add_library(blst STATIC ${BLST_SOURCES})
+    
+    target_include_directories(blst 
+        PUBLIC ${blst_SOURCE_DIR}/bindings
+        PRIVATE ${blst_SOURCE_DIR}/src
+    )
+    if(MSVC)
+        set_source_files_properties(
+            "${blst_SOURCE_DIR}/src/server.c"
+            PROPERTIES COMPILE_OPTIONS "/std:c11;/W1;/wd4146;/wd4334;/wd4245;/wd4267;/wd4028"
+        )
+    else()
+        target_compile_options(blst PRIVATE -std=c11 -w)
+    endif()
+    
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm")
+        target_compile_definitions(blst PRIVATE __ARM_ARCH=7)
+    endif()
+endif()
+
 
 message(STATUS "Fetching micro-ecc....")
 FetchContent_Declare(
