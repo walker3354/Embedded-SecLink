@@ -1,63 +1,99 @@
 #include "esl/crypto/BlsCore.hpp"
 
-// 之後會用到 blst，現在先不 include 也能編譯
-// #include <blst.h>
+#include <blst.h>
+
+#include <array>
+#include <cstring>
+#include <iomanip>
+#include <sstream>
+#include <stdexcept>
+
+#include "esl/utils/Random.hpp"
+
+using namespace std;
+using namespace esl;
 
 namespace esl::crypto {
-
-    // Pimpl: 目前只是空殼，之後會放 blst_scalar / blst_p1 等等
     struct BlsCore::Impl {
-            // 佔位符，之後會變成 blst_scalar secretKey; blst_p1 publicKey;
-            int placeholder = 0;
+            blst_scalar secret_key;
+            blst_p1 public_key;
     };
 
     BlsCore::BlsCore(bool dev_mode)
         : keys(std::make_unique<Impl>()), dev_mode(dev_mode) {
-        // globalInit();    // 之後實作
-        // generate_keys(); // 之後實作
+        generate_keys();
     }
 
     BlsCore::~BlsCore() = default;
 
-    void BlsCore::globalInit() {
-        // TODO: blst_init or other setup
-    }
-
     void BlsCore::generate_keys() {
-        // TODO: blst_keygen
-    }
-
-    std::string BlsCore::get_public_keyHex() const {
-        return "0xDEADBEEF"; // 佔位符
-    }
-
-    std::string BlsCore::get_secret_keyHex() const {
-        if (dev_mode) {
-            return "0xSECRET";
+        array<uint8_t, BlsCore::IKM_LEN> ikm;
+        utils::Random rand(0, 255);
+        for (auto& bytes : ikm) {
+            bytes = static_cast<uint8_t>(rand.get_random_int());
         }
-        return "";
+
+        const char* info_str = "ESL-BLS12381-KEYGEN";
+        blst_keygen(&keys->secret_key, ikm.data(), ikm.size(),
+                    reinterpret_cast<const uint8_t*>(info_str),
+                    strlen(info_str));
+        blst_sk_to_pk_in_g1(&keys->public_key, &keys->secret_key);
+        memset(ikm.data(), 0, ikm.size());
     }
 
-    std::string BlsCore::bls_sign(const std::string& message) const {
-        (void)message; // 避免 unused warning
-        return "0xSIGNATURE";
+    string bytes_to_hex(const uint8_t* data, size_t len) {
+        stringstream ss;
+        ss << "0x" << hex << setfill('0');
+        for (size_t i = 0; i < len; ++i) {
+            ss << setw(2) << static_cast<int>(data[i]);
+        }
+        return ss.str();
     }
 
-    bool BlsCore::bls_verify(const std::string& message,
-                             const std::string& signatureHex,
-                             const std::string& publicKeyHex) {
-        (void)message;
-        (void)signatureHex;
-        (void)publicKeyHex;
-        return false; // 空實作：總是失敗
+    string BlsCore::get_public_keyHex() const {
+        blst_p1_affine pk_affine;
+        blst_p1_to_affine(&pk_affine, &keys->public_key);
+        array<uint8_t, BlsCore::G1_COMPRESSED_SIZE> compressed;
+        blst_p1_affine_compress(compressed.data(), &pk_affine);
+        return bytes_to_hex(compressed.data(), compressed.size());
     }
 
-    std::string BlsCore::get_pop_proof() const {
+    string BlsCore::get_secret_keyHex() const {
+        if (dev_mode == false) return "";
+
+        array<uint8_t, BlsCore::SCALAR_SIZE> sk_bytes;
+        blst_bendian_from_scalar(sk_bytes.data(), &keys->secret_key);
+        return bytes_to_hex(sk_bytes.data(), sk_bytes.size());
+    }
+
+    string BlsCore::bls_sign(const string& message) const {
+        const char* DST = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_";
+        blst_p2 hash_point;
+        blst_hash_to_g2(&hash_point,
+                        reinterpret_cast<const uint8_t*>(message.data()),
+                        message.size(), reinterpret_cast<const uint8_t*>(DST),
+                        std::strlen(DST), nullptr, 0);
+        blst_p2 signature;
+        blst_sign_pk_in_g1(&signature, &hash_point, &keys->secret_key);
+        blst_p2_affine sig_affine;
+        blst_p2_to_affine(&sig_affine, &signature);
+
+        array<uint8_t, BlsCore::G2_COMPRESSED_SIZE> compressed;
+        blst_p2_affine_compress(compressed.data(), &sig_affine);
+        return bytes_to_hex(compressed.data(), compressed.size());
+    }
+
+    bool BlsCore::bls_verify(const string& message, const string& signatureHex,
+                             const string& publicKeyHex) {
+        return false;
+    }
+
+    string BlsCore::get_pop_proof() const {
         return bls_sign(get_public_keyHex());
     }
 
-    bool BlsCore::verify_pop_proof(const std::string& pubKeysHex,
-                                   const std::string& pop_proof) const {
+    bool BlsCore::verify_pop_proof(const string& pubKeysHex,
+                                   const string& pop_proof) const {
         return bls_verify(pubKeysHex, pop_proof, pubKeysHex);
     }
 

@@ -9,10 +9,13 @@ namespace esl::crypto {
         private:
             struct Impl;
             std::unique_ptr<Impl> keys;
+            bool dev_mode;
+            constexpr static size_t IKM_LEN = 48;
+            constexpr static size_t G1_COMPRESSED_SIZE = 48;
+            constexpr static size_t SCALAR_SIZE = 32;
+            constexpr static size_t G2_COMPRESSED_SIZE = 96;
 
             void generate_keys();
-            void globalInit();
-            bool dev_mode;
 
         public:
             BlsCore(bool dev_mode = false);
