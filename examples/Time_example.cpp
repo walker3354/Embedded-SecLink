@@ -47,8 +47,8 @@ void test_TimeUtils() {
     cout << "Formatted (s) : " << formatted_s << endl;
 
     TimeUtils tu;
-    bool is_fresh_ms = tu.check_timestamp_fresh_ms(now_ms, 2000);
-    bool is_fresh_s = tu.check_timestamp_fresh_s(now_s, 5);
+    bool is_fresh_ms = TimeUtils::check_timestamp_fresh_ms(now_ms, 2000);
+    bool is_fresh_s = TimeUtils::check_timestamp_fresh_s(now_s, 5);
 
     cout << "Is current timestamp fresh (ms)? " << (is_fresh_ms ? "Yes" : "No")
          << endl;
@@ -56,7 +56,7 @@ void test_TimeUtils() {
          << endl;
 
     auto old_time = now_ms - chrono::milliseconds(3000);
-    bool is_old_fresh = tu.check_timestamp_fresh_ms(old_time, 2000);
+    bool is_old_fresh = TimeUtils::check_timestamp_fresh_ms(old_time, 2000);
     cout << "Is 3-second-old timestamp fresh (tolerance 2s)? "
          << (is_old_fresh ? "Yes" : "No") << endl;
 
