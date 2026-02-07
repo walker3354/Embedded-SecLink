@@ -11,11 +11,14 @@ namespace esl::crypto {
             bool dev_mode;
             static constexpr size_t compressed_pk_size = 33;
             static constexpr size_t session_key_size = 32;
+            static constexpr const char* key_load_path = "key.json";
 
-            void generate_keys();
+            void generate_keys(uint16_t key_id);
+            void load_key(uint16_t key_id);
+            void save_key(uint16_t key_id);
 
         public:
-            EccCore(bool dev_mode = false);
+            EccCore(uint16_t key_id, bool dev_mode = false);
             ~EccCore();
             // copy not allow
             EccCore(const EccCore&) = delete;

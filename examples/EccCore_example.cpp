@@ -11,6 +11,8 @@
 using namespace std;
 using namespace esl;
 
+uint16_t key_id = 1;
+
 void print_hex(const string& label, const vector<uint8_t>& data) {
     cout << label << " (" << data.size() << " bytes): ";
     for (size_t i = 0; i < data.size(); ++i) {
@@ -50,7 +52,7 @@ int main() {
 }
 
 bool test_ecdsa_sign_verify() {
-    crypto::EccCore ecc(true); // dev_mode = true
+    crypto::EccCore ecc(key_id, true); // dev_mode = true
     string message = "Hello ESL!";
     vector<uint8_t> signature = ecc.ECDSA(message);
     bool valid = crypto::EccCore::verify_signature(ecc.get_public_key(),
@@ -62,8 +64,8 @@ bool test_ecdsa_sign_verify() {
 }
 
 bool test_ecdh_key_exchange() {
-    crypto::EccCore alice(true);
-    crypto::EccCore bob(true);
+    crypto::EccCore alice(1, true);
+    crypto::EccCore bob(2, true);
     vector<uint8_t> alice_secret = alice.ECDH(bob.get_public_key());
     vector<uint8_t> bob_secret = bob.ECDH(alice.get_public_key());
     if (alice_secret.size() != 32 || bob_secret.size() != 32) return false;
@@ -71,7 +73,7 @@ bool test_ecdh_key_exchange() {
 }
 
 bool test_symmetric_crypto() {
-    crypto::EccCore ecc(true);
+    crypto::EccCore ecc(key_id, true);
     string original_msg = "Sensitive Data Payload";
     vector<uint8_t> session_key(32);
     for (int i = 0; i < 32; i++) session_key[i] = (uint8_t)i;
@@ -82,8 +84,8 @@ bool test_symmetric_crypto() {
 }
 
 bool test_asymmetric_hybrid_crypto() {
-    crypto::EccCore alice(true); // Sender
-    crypto::EccCore bob(true);   // Receiver
+    crypto::EccCore alice(key_id, true); // Sender
+    crypto::EccCore bob(key_id, true);   // Receiver
     string message = "Hybrid Encrypted Message for Bob only.";
     vector<uint8_t> encrypted_package =
         alice.asymmetric_encrypt(bob.get_public_key(), message);

@@ -9,6 +9,7 @@
 #include <stdexcept>
 
 #include "esl/utils/Random.hpp"
+#include "esl/utils/json.hpp"
 
 using namespace std;
 using namespace esl;

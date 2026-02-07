@@ -21,11 +21,10 @@ namespace esl::crypto {
             BlsCore(bool dev_mode = false);
             ~BlsCore();
 
-            // 暫時先禁用 copy/move（避免實作 move constructor）
             BlsCore(const BlsCore&) = delete;
             BlsCore& operator=(const BlsCore&) = delete;
-            // BlsCore(BlsCore&&) noexcept;               // 先註解掉
-            // BlsCore& operator=(BlsCore&&) noexcept;    // 先註解掉
+            // BlsCore(BlsCore&&) noexcept;
+            // BlsCore& operator=(BlsCore&&) noexcept;
 
             std::string get_public_keyHex() const;
             std::string get_secret_keyHex() const;
