@@ -4,7 +4,9 @@
 
 #include <array>
 #include <cstring>
+#include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 
@@ -13,6 +15,7 @@
 
 using namespace std;
 using namespace esl;
+using json = nlohmann::json;
 
 namespace {
     string bytes_to_hex(const uint8_t* data, size_t len) {
@@ -44,6 +47,15 @@ namespace {
         }
         return bytes;
     }
+
+    void string_to_scalar(const string& hex_str, blst_scalar& out_scalar) {
+        vector<uint8_t> bytes = hex_to_bytes(hex_str);
+        if (bytes.size() != 32) {
+            throw invalid_argument(
+                "Invalid secret key length. Expected 32 bytes.");
+        }
+        blst_scalar_from_bendian(&out_scalar, bytes.data());
+    }
 } // namespace
 
 namespace esl::crypto {
@@ -52,14 +64,74 @@ namespace esl::crypto {
             blst_p1 public_key;
     };
 
-    BlsCore::BlsCore(bool dev_mode)
+    BlsCore::BlsCore(uint16_t key_id, bool dev_mode)
         : keys(make_unique<Impl>()), dev_mode(dev_mode) {
-        generate_keys();
+        load_key(key_id);
     }
 
     BlsCore::~BlsCore() = default;
 
-    void BlsCore::generate_keys() {
+    void BlsCore::load_key(uint16_t key_id) {
+        try {
+            ifstream f(BlsCore::key_load_path);
+            if (!f.is_open()) {
+                cout << "Key file not found, generating new key..." << endl;
+                this->generate_keys(key_id);
+                return;
+            }
+            json data = json::parse(f);
+            string id_str = to_string(key_id);
+            if (!data.contains(id_str) || !data[id_str].contains("bls")) {
+                f.close();
+                cout << "BLS key not found in json" << endl;
+                this->generate_keys(key_id);
+                return;
+            }
+            string hex_key = data[id_str]["bls"];
+            if (hex_key.length() != 66) { // 0x
+                f.close();
+                cout << "Key ID not found in json, generating new key..."
+                     << endl;
+                this->generate_keys(key_id);
+                return;
+            }
+            string_to_scalar(hex_key, keys->secret_key);
+            blst_sk_to_pk_in_g1(&keys->public_key, &keys->secret_key);
+            f.close();
+        } catch (const exception& e) {
+            throw runtime_error(string("Error occur while initial Bls key: ") +
+                                e.what());
+        }
+    }
+
+    void BlsCore::save_key(uint16_t key_id) {
+        json data;
+        string id_str = to_string(key_id);
+        ifstream f_in(BlsCore::key_load_path);
+        if (f_in.is_open()) {
+            try {
+                data = json::parse(f_in);
+            } catch (...) {
+                data = json::object();
+            }
+            f_in.close();
+        }
+        bool temp_mode = dev_mode;
+        string priv_hex = get_secret_keyHex_internal();
+        string pub_hex = get_public_keyHex();
+        data[id_str]["bls"] = priv_hex;
+        data[id_str]["bls_pub"] = pub_hex;
+        ofstream f_out(BlsCore::key_load_path);
+        if (!f_out.is_open()) {
+            throw runtime_error("Cannot open key file for writing");
+        }
+        f_out << data.dump(4);
+        f_out.close();
+        cout << "[BlsCore] Key " << key_id << " saved to "
+             << BlsCore::key_load_path << endl;
+    }
+
+    void BlsCore::generate_keys(uint16_t key_id) {
         array<uint8_t, BlsCore::IKM_LEN> ikm;
         utils::Random rand(0, 255);
         for (auto& bytes : ikm) {
@@ -72,6 +144,13 @@ namespace esl::crypto {
                     strlen(info_str));
         blst_sk_to_pk_in_g1(&keys->public_key, &keys->secret_key);
         memset(ikm.data(), 0, ikm.size());
+        save_key(key_id);
+    }
+
+    string BlsCore::get_secret_keyHex_internal() const {
+        array<uint8_t, BlsCore::SCALAR_SIZE> sk_bytes;
+        blst_bendian_from_scalar(sk_bytes.data(), &keys->secret_key);
+        return bytes_to_hex(sk_bytes.data(), sk_bytes.size());
     }
 
     string BlsCore::get_public_keyHex() const {

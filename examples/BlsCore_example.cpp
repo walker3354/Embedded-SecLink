@@ -11,10 +11,12 @@ using namespace esl;
 bool test_bls_aggregate_sign();
 bool test_bls_fast_aggregate_sign();
 
+uint16_t key_id = 1;
+
 int main() {
     string test_message = "hi";
     try {
-        crypto::BlsCore bls_component(true);
+        crypto::BlsCore bls_component(key_id, true);
         cout << "pk: " << bls_component.get_public_keyHex() << endl;
         cout << "sk: " << bls_component.get_secret_keyHex() << endl;
 
@@ -47,7 +49,7 @@ bool test_bls_aggregate_sign() {
     vector<string> sign_vector;
     vector<string> message_vector;
     for (int i = 0; i < 3; i++) {
-        crypto::BlsCore bls(true);
+        crypto::BlsCore bls(2, true);
         pk_vector.push_back(bls.get_public_keyHex());
         string message = to_string(utils::Random::getIntGlobal(0, 255));
         message_vector.push_back(message);
@@ -63,7 +65,7 @@ bool test_bls_fast_aggregate_sign() {
     vector<string> pk_vector;
     vector<string> sign_vector;
     for (int i = 0; i < 100; i++) {
-        crypto::BlsCore bls(true);
+        crypto::BlsCore bls(key_id, true);
         pk_vector.push_back(bls.get_public_keyHex());
         sign_vector.push_back(bls.bls_sign(message));
     }

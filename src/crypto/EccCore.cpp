@@ -1,5 +1,6 @@
 #include "esl/crypto/EccCore.hpp"
 
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -78,13 +79,15 @@ namespace esl::crypto {
             }
             json data = json::parse(f);
             string id_str = to_string(key_id);
-            if (!data.contains(id_str)) {
+            if (!data.contains(id_str) || !data[id_str].contains("ecc")) {
+                f.close();
                 cout << "Key ID not found in json" << endl;
                 this->generate_keys(key_id);
                 return;
             }
             string hex_key = data[id_str]["ecc"];
             if (hex_key.length() != 64) {
+                f.close();
                 cout << "Key ID not found in json, generating new key..."
                      << endl;
                 this->generate_keys(key_id);
@@ -94,10 +97,11 @@ namespace esl::crypto {
             copy(priv_bytes.begin(), priv_bytes.end(), m_impl->private_key);
             if (!uECC_compute_public_key(m_impl->private_key,
                                          m_impl->public_key, m_impl->curve)) {
-                throw std::runtime_error("uECC failed to compute public key");
+                throw runtime_error("uECC failed to compute public key");
             }
             uECC_compress(m_impl->public_key, m_impl->compressed_public_key,
                           m_impl->curve);
+            f.close();
         } catch (const exception& e) {
             throw runtime_error(string("Error initializing Ecc key: ") +
                                 e.what());

@@ -14,11 +14,16 @@ namespace esl::crypto {
             constexpr static size_t G1_COMPRESSED_SIZE = 48;
             constexpr static size_t SCALAR_SIZE = 32;
             constexpr static size_t G2_COMPRESSED_SIZE = 96;
+            constexpr static char* key_load_path = "key.json";
 
-            void generate_keys();
+            void generate_keys(uint16_t key_id);
+            void save_key(uint16_t key_id);
+            void load_key(uint16_t key_id);
+
+            std::string get_secret_keyHex_internal() const;
 
         public:
-            BlsCore(bool dev_mode = false);
+            BlsCore(uint16_t key_id, bool dev_mode = false);
             ~BlsCore();
 
             BlsCore(const BlsCore&) = delete;
