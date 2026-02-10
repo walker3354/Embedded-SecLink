@@ -36,10 +36,16 @@ namespace esl::crypto {
             std::string get_compressed_public_key_Hex() const;
 
             std::vector<uint8_t> ECDSA(const std::string& message) const;
+
+            static bool verify_signature(const std::string& public_key_hex,
+                                         const std::string& message,
+                                         const std::vector<uint8_t>& signature);
             static bool verify_signature(const std::vector<uint8_t>& public_key,
                                          const std::string& message,
                                          const std::vector<uint8_t>& signature);
 
+            std::vector<uint8_t> ECDH(
+                const std::string& peer_public_key_hex) const;
             std::vector<uint8_t> ECDH(
                 const std::vector<uint8_t>& peer_public_key) const;
 
@@ -51,6 +57,9 @@ namespace esl::crypto {
                 const std::vector<uint8_t>& session_key,
                 const std::vector<uint8_t>& encrypted_data) const;
 
+            std::vector<uint8_t> asymmetric_encrypt(
+                const std::string& peer_public_key_hex,
+                const std::string& message) const;
             std::vector<uint8_t> asymmetric_encrypt(
                 const std::vector<uint8_t>& peer_public_key,
                 const std::string& message) const;

@@ -194,42 +194,61 @@ namespace esl::crypto {
         return signature;
     }
 
+    bool EccCore::verify_signature(const string& public_key_hex,
+                                   const string& message,
+                                   const vector<uint8_t>& signature) {
+        return verify_signature(hex_to_bytes(public_key_hex), message,
+                                signature);
+    }
+
     bool EccCore::verify_signature(const vector<uint8_t>& public_key,
                                    const string& message,
                                    const vector<uint8_t>& signature) {
         if (signature.size() != 64) return false;
-        vector<uint8_t> temp_pk = public_key;
+        vector<uint8_t> final_pk(64);
         const struct uECC_Curve_t* curve = uECC_secp256r1();
+
         if (public_key.size() == 33) {
-            temp_pk.resize(64);
-            uECC_decompress(public_key.data(), temp_pk.data(), curve);
-        } else if (public_key.size() != 64)
+            uECC_decompress(public_key.data(), final_pk.data(), curve);
+        } else if (public_key.size() == 64) {
+            final_pk = public_key;
+        } else {
             return false;
+        }
 
         vector<uint8_t> hash(k_digest_size);
         hash256(message.begin(), message.end(), hash.begin(), hash.end());
-
-        int result = uECC_verify(public_key.data(), hash.data(),
+        int result = uECC_verify(final_pk.data(), hash.data(),
                                  static_cast<unsigned>(hash.size()),
                                  signature.data(), curve);
         return (result == 1);
     }
 
+    vector<uint8_t> EccCore::ECDH(const string& peer_public_key_hex) const {
+        vector<uint8_t> raw_key = hex_to_bytes(peer_public_key_hex);
+        return ECDH(raw_key);
+    }
+
     vector<uint8_t> EccCore::ECDH(
         const vector<uint8_t>& peer_public_key) const {
-        vector<uint8_t> raw_peer_key = peer_public_key;
+        vector<uint8_t> raw_peer_key(64);
+        const struct uECC_Curve_t* curve = uECC_secp256r1();
+
         if (peer_public_key.size() == 33) {
-            raw_peer_key.resize(64);
-            uECC_decompress(peer_public_key.data(), raw_peer_key.data(),
-                            m_impl->curve);
-        } else if (peer_public_key.size() != 64)
+            uECC_decompress(peer_public_key.data(), raw_peer_key.data(), curve);
+        } else if (peer_public_key.size() == 64) {
+            raw_peer_key = peer_public_key;
+        } else {
             throw invalid_argument("ECDH: Invalid peer public key size");
-        vector<uint8_t> session_key(EccCore::session_key_size);
+        }
+
+        vector<uint8_t> session_key(EccCore::session_key_size); // 32 bytes
         int result =
             uECC_shared_secret(raw_peer_key.data(), m_impl->private_key,
-                               session_key.data(), m_impl->curve);
-        if (result == 0) throw runtime_error("ECDH failed");
-        return session_key; // 32 bytes
+                               session_key.data(), curve);
+
+        if (result == 0) throw runtime_error("ECDH computation failed");
+        return session_key;
     }
 
     vector<uint8_t> EccCore::symmetric_encrypt(
@@ -284,6 +303,11 @@ namespace esl::crypto {
             AesCore::decrypt_cbc(ciphertext, aes_key, iv);
 
         return string(plaintext.begin(), plaintext.end());
+    }
+
+    vector<uint8_t> EccCore::asymmetric_encrypt(
+        const string& peer_public_key_hex, const string& message) const {
+        return asymmetric_encrypt(hex_to_bytes(peer_public_key_hex), message);
     }
 
     vector<uint8_t> EccCore::asymmetric_encrypt(
