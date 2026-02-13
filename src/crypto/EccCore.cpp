@@ -121,9 +121,9 @@ namespace esl::crypto {
             f_in.close();
         }
         string priv_hex = get_private_key_Hex();
-        string pub_hex = get_public_key_Hex();
+        string compress_pub_hex = get_compressed_public_key_Hex();
         data[id_str]["ecc"] = priv_hex;
-        data[id_str]["ecc_pub"] = pub_hex;
+        data[id_str]["ecc_pub"] = compress_pub_hex;
         ofstream f_out(EccCore::key_load_path);
         if (!f_out.is_open()) {
             throw runtime_error("Cannot open key file for writing");
