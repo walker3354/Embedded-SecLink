@@ -89,7 +89,6 @@ FetchContent_Declare(
 FetchContent_GetProperties(micro_ecc)
 if(NOT micro_ecc_POPULATED)
     FetchContent_Populate(micro_ecc)
-    add_subdirectory(${micro_ecc_SOURCE_DIR} ${micro_ecc_BINARY_DIR})
 endif()
 FetchContent_GetProperties(micro_ecc SOURCE_DIR uECC_SOURCE_DIR)
 
@@ -103,7 +102,6 @@ FetchContent_Declare(
 FetchContent_GetProperties(picosha2)
 if(NOT picosha2_POPULATED)
     FetchContent_Populate(picosha2)
-    add_subdirectory(${picosha2_SOURCE_DIR} ${picosha2_BINARY_DIR})
 endif()
 FetchContent_GetProperties(picosha2 SOURCE_DIR picosha2_SOURCE_DIR)
 
