@@ -117,7 +117,6 @@ FetchContent_Declare(
 FetchContent_GetProperties(tiny_aes)
 if(NOT tiny_aes_POPULATED)
     FetchContent_Populate(tiny_aes)
-    add_subdirectory(${tiny_aes_SOURCE_DIR} ${tiny_aes_BINARY_DIR})
 endif()
 FetchContent_GetProperties(tiny_aes SOURCE_DIR aes_SOURCE_DIR)
 
