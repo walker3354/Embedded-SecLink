@@ -1,9 +1,11 @@
+#cmake_minimum_required(VERSION 3.15)
 cmake_minimum_required(VERSION 3.12)
 
 project(Embedded-SecLink 
     VERSION 1.0.0
     LANGUAGES CXX C
 )
+
 
 option(ESL_BUILD_SHARED "Build ESL as a shared library(.dll)" OFF)
 option(ESL_BUILD_TESTS "Build test suite" OFF)
@@ -23,17 +25,20 @@ if(ESL_BUILD_TESTS)
         DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     )
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    
-    FetchContent_GetProperties(googletest)
-    if(NOT googletest_POPULATED)
-        FetchContent_Populate(googletest)
-        add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
-    endif()
+    FetchContent_MakeAvailable(googletest)
 endif()
+
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+message(STATUS "Fetching blst ...")
+FetchContent_Declare(
+    blst
+    GIT_REPOSITORY https://github.com/supranational/blst.git
+    GIT_TAG        v0.3.13
+)
 
 message(STATUS "Fetching blst ...")
 FetchContent_Declare(
@@ -79,6 +84,7 @@ if(NOT blst_POPULATED)
     endif()
 endif()
 
+
 message(STATUS "Fetching micro-ecc....")
 FetchContent_Declare(
     micro_ecc 
@@ -86,11 +92,7 @@ FetchContent_Declare(
     GIT_TAG        master   
 )
 
-FetchContent_GetProperties(micro_ecc)
-if(NOT micro_ecc_POPULATED)
-    FetchContent_Populate(micro_ecc)
-    add_subdirectory(${micro_ecc_SOURCE_DIR} ${micro_ecc_BINARY_DIR})
-endif()
+FetchContent_MakeAvailable(micro_ecc)
 FetchContent_GetProperties(micro_ecc SOURCE_DIR uECC_SOURCE_DIR)
 
 message(STATUS "Fetching PicoSHA2")
@@ -99,12 +101,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/okdshin/PicoSHA2.git
     GIT_TAG        master
 )
-
-FetchContent_GetProperties(picosha2)
-if(NOT picosha2_POPULATED)
-    FetchContent_Populate(picosha2)
-    add_subdirectory(${picosha2_SOURCE_DIR} ${picosha2_BINARY_DIR})
-endif()
+FetchContent_MakeAvailable(picosha2)
 FetchContent_GetProperties(picosha2 SOURCE_DIR picosha2_SOURCE_DIR)
 
 message(STATUS "Fetching tiny-AES-c...")
@@ -113,13 +110,10 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/kokke/tiny-AES-c.git
     GIT_TAG        master
 )
-
-FetchContent_GetProperties(tiny_aes)
-if(NOT tiny_aes_POPULATED)
-    FetchContent_Populate(tiny_aes)
-    add_subdirectory(${tiny_aes_SOURCE_DIR} ${tiny_aes_BINARY_DIR})
-endif()
+FetchContent_MakeAvailable(tiny_aes)
 FetchContent_GetProperties(tiny_aes SOURCE_DIR aes_SOURCE_DIR)
+
+
 
 add_subdirectory(src)
 
