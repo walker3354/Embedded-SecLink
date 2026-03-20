@@ -1,19 +1,32 @@
 cmake_minimum_required(VERSION 3.12)
 
 project(Embedded-SecLink 
-    VERSION 1.0.0
+    VERSION 1.1.0
     LANGUAGES CXX C
 )
 
+
+# ===== Options =====
 option(ESL_BUILD_SHARED "Build ESL as a shared library(.dll)" OFF)
 option(ESL_BUILD_TESTS "Build test suite" OFF)
 option(ESL_BUILD_EXAMPLES "Build examples" ON)
 option(ESL_STRICT_MODE "Enable strict compilation warnings" OFF)
 
+# ===== C++ Standard =====
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# ===== Install Dirs =====
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+# ===== Output Dirs =====
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# ===== FetchContent =====
 include(FetchContent)
 if(ESL_BUILD_TESTS)
     message(STATUS "Fetching GoogleTest...")
@@ -30,10 +43,6 @@ if(ESL_BUILD_TESTS)
         add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
     endif()
 endif()
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 message(STATUS "Fetching blst ...")
 FetchContent_Declare(
@@ -128,3 +137,22 @@ if(ESL_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
+
+# ===== Install: CMake package config =====
+configure_package_config_file(
+    cmake/EslConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/EslConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/esl
+)
+
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/EslConfigVersion.cmake
+    VERSION       ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/EslConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/EslConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/esl
+)

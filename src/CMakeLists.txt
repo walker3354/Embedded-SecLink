@@ -58,3 +58,20 @@ else()
         PROPERTIES COMPILE_OPTIONS "-w"
     )
 endif()
+
+# ===== Install =====
+install(TARGETS esl
+    EXPORT  EslTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/esl
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(EXPORT EslTargets
+    FILE      EslTargets.cmake
+    NAMESPACE esl::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/esl
+)

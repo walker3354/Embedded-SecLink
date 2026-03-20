@@ -86,7 +86,6 @@ bool test_ecdsa_sign_verify_hex() {
     string message = "Hello ESL (Hex)!";
     vector<uint8_t> signature = ecc.ECDSA(message);
 
-    // 使用 Hex String 公鑰介面
     bool valid = crypto::EccCore::verify_signature(ecc.get_public_key_Hex(),
                                                    message, signature);
 
@@ -134,7 +133,7 @@ bool test_ecdh_compressed_key() {
 
     vector<uint8_t> s1 = alice.ECDH(bob.get_compressed_public_key());
     vector<uint8_t> s2 =
-        bob.ECDH(alice.get_compressed_public_key_Hex()); // 混用 Hex 測試
+        bob.ECDH(alice.get_compressed_public_key_Hex()); 
 
     return s1 == s2;
 }
