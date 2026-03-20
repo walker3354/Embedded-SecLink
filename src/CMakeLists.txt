@@ -35,7 +35,7 @@ target_include_directories(esl
 )
 
 target_compile_definitions(esl PRIVATE CBC=1 CTR=0 ECB=0)
-target_link_libraries(esl PRIVATE  blst)
+target_link_libraries(esl PRIVATE  $<BUILD_INTERFACE:blst>)
 
 if(ESL_STRICT_MODE)
     if(MSVC)

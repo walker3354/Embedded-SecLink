@@ -71,8 +71,9 @@ if(NOT blst_POPULATED)
     add_library(blst STATIC ${BLST_SOURCES})
     
     target_include_directories(blst 
-        PUBLIC ${blst_SOURCE_DIR}/bindings
-        PRIVATE ${blst_SOURCE_DIR}/src
+        PRIVATE 
+        ${blst_SOURCE_DIR}/src
+        ${blst_SOURCE_DIR}/bindings
     )
     if(MSVC)
         set_source_files_properties(
