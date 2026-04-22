@@ -18,7 +18,7 @@
 
 ---
 
-## 技術堆疊
+## 來源依賴
 
 本專案基於 **Modern CMake（3.12+）** 構建，並整合以下開源專案：
 
@@ -54,3 +54,88 @@ cmake --build . --config Release
 # 4. 安裝
 cmake --install . --config Release
 ```
+
+### 方式二：透過 FetchContent 自動下載（開發環境）
+
+適合開發階段，CMake 會自動從 GitHub 拉取並編譯 ESL，不需要預先安裝。
+
+```cmake
+cmake_minimum_required(VERSION 3.12)
+project(MyOBUApp)
+
+include(FetchContent)
+FetchContent_Declare(
+    esl
+    GIT_REPOSITORY https://github.com/walker3354/Embedded-SecLink.git
+    GIT_TAG        main
+)
+FetchContent_MakeAvailable(esl)
+
+add_executable(my_app main.cpp)
+target_link_libraries(my_app PRIVATE esl::esl)
+```
+
+> **注意**：`GIT_TAG` 建議指定固定的 commit SHA 或 release tag（例如 `v1.1.0`）而非 `main`，避免 upstream 更新造成建置不穩定。
+
+### 專案結構 (Directory Structure)
+
+```text
+sdk_output/
+├── include/esl/
+│   ├── crypto/
+│   │   ├── BlsCore.hpp
+│   │   └── EccCore.hpp
+│   └── utils/
+│       ├── HashTree.hpp
+│       ├── Random.hpp
+│       ├── Stopwatch.hpp
+│       ├── TimeUtils.hpp
+│       └── json.hpp
+└── lib/
+    ├── esl.lib ( Windows ) 或 libesl.a ( Linux )
+    └── cmake/esl/
+        ├── EslConfig.cmake
+        ├── EslConfigVersion.cmake
+        └── EslTargets.cmake
+```
+
+### 建置選項
+
+| 選項                 | 預設值 | 說明                                        |
+| :------------------- | :----- | :------------------------------------------ |
+| `ESL_BUILD_SHARED`   | `OFF`  | 建置動態庫（.dll/.so）而非靜態庫（.lib/.a） |
+| `ESL_BUILD_TESTS`    | `OFF`  | 下載 GoogleTest 並建置單元測試              |
+| `ESL_BUILD_EXAMPLES` | `ON`   | 建置範例程式                                |
+| `ESL_STRICT_MODE`    | `OFF`  | 啟用嚴格編譯警告（-Wall -Wextra -Werror）   |
+
+---
+
+## 在你的專案中使用
+
+安裝完成後，在其他 CMake 專案中引用 ESL：
+
+```cmake
+cmake_minimum_required(VERSION 3.12)
+project(MyOBUApp)
+
+# 指定 ESL SDK 位置
+set(esl_DIR "path/to/sdk_output/lib/cmake/esl")
+
+find_package(esl REQUIRED)
+
+add_executable(my_app main.cpp)
+target_link_libraries(my_app PRIVATE esl::esl)
+```
+
+或在執行 cmake 時透過參數指定：
+
+```bash
+cmake .. -Desl_DIR="path/to/sdk_output/lib/cmake/esl"
+```
+
+---
+
+## 授權
+
+本專案原始碼採用 MIT License。
+所使用的第三方庫遵循其各自的授權條款（Apache-2.0 / BSD / MIT / Public Domain）。
