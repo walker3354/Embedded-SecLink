@@ -1,5 +1,6 @@
 # Embedded-SecLink (ESL)
 
+![](/ESL_logo.jpg "ESL logo")
 **Embedded-SecLink (ESL)** 是一個專為嵌入式系統（尤其是 V2X 車聯網環境）設計的輕量級安全通訊框架。它整合了現代密碼學演算法（ECC、BLS、AES）與資料結構（Merkle Tree），旨在提供一個可移植、易於整合的 C++ 安全函式庫。
 
 本專案是碩士論文的(XXXXXXX)所使用的核心套件，目標是在計算資源受限的 OBU（On-Board Unit）上實現高效的安全群組通訊。
